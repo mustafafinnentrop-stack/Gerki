@@ -60,7 +60,8 @@
       "icon": "resources/icon.ico",
       "requestedExecutionLevel": "asInvoker",
       "artifactName": "Gerki-Setup-${version}.${ext}",
-      "forceCodeSigning": false
+      "forceCodeSigning": false,
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
