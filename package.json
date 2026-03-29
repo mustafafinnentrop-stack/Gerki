@@ -55,6 +55,9 @@
     "directories": { "output": "dist" },
     "files": ["out/**/*"],
     "extraResources": [],
+    "protocols": [
+      { "name": "Gerki", "schemes": ["gerki-app"] }
+    ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
       "icon": "resources/icon.ico",

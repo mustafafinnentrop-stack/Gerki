@@ -160,6 +160,8 @@ declare global {
           user?: { id: string; username: string; email: string; plan: string; created_at: string }
           error?: string
         }>
+        /** Öffnet gerki.app/login?source=app im Browser für Google OAuth */
+        loginWithGoogle: () => Promise<{ success: boolean }>
         /** Remote-first Login: versucht gerki.app API, fällt auf lokale Auth zurück (offline) */
         login: (emailOrUsername: string, password: string) => Promise<{
           success: boolean

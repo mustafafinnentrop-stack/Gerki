@@ -415,6 +415,13 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return registerUser(username, email, password)
   })
 
+  ipcMain.handle('auth:login-google', async () => {
+    // Öffnet gerki.app/login?source=app im Systembrowser
+    // Nach Google Login leitet gerki.app zu gerki-app://auth?token=JWT weiter
+    await shell.openExternal('https://gerki.app/login?source=app')
+    return { success: true }
+  })
+
   // Remote-first Login: versucht gerki.app API, fällt auf lokale SQLite-Auth zurück (offline)
   ipcMain.handle('auth:login', async (_event, emailOrUsername: string, password: string) => {
     // Remote-Login (nur wenn Email-Format erkannt – Username ist immer lokal)

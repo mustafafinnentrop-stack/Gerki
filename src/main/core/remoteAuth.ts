@@ -188,3 +188,12 @@ export async function verifyStoredToken(): Promise<RemoteUser | null> {
 export function getStoredToken(): string | null {
   return loadToken()
 }
+
+/**
+ * Deep-Link Token (von gerki-app://auth?token=...) speichern und User laden.
+ * Wird nach Google OAuth Callback aufgerufen.
+ */
+export async function storeDeepLinkToken(token: string): Promise<RemoteUser | null> {
+  storeToken(token)
+  return verifyStoredToken()
+}

@@ -80,6 +80,7 @@ const gerki = {
       ipcRenderer.invoke('auth:register', username, email, password),
     login: (emailOrUsername: string, password: string) =>
       ipcRenderer.invoke('auth:login', emailOrUsername, password),
+    loginWithGoogle: () => ipcRenderer.invoke('auth:login-google'),
     currentUser: () => ipcRenderer.invoke('auth:current-user'),
     logout: () => ipcRenderer.invoke('auth:logout'),
     changePassword: (userId: string, oldPassword: string, newPassword: string) =>
