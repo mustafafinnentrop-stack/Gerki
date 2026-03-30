@@ -526,9 +526,39 @@ function OpenclawStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => vo
       </button>
 
       {installError && (
-        <p className="flex items-center gap-1 text-xs text-red-400 mb-2 px-1">
-          <AlertCircle size={12} />{installError}
-        </p>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-2">
+          <p className="flex items-center gap-1 text-xs text-red-400 mb-2">
+            <AlertCircle size={12} />{installError}
+          </p>
+          <p className="text-xs text-white/40">
+            Windows-Tipp: Versuche "OpenClaw starten" — Ollama muss laufen. Ein UAC-Fenster für die Firewall-Freigabe erscheint, bitte bestätigen.
+          </p>
+          <button
+            onClick={autoInstall}
+            disabled={installing}
+            className="mt-2 w-full py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 text-xs transition-colors flex items-center justify-center gap-2"
+          >
+            {installing ? <Loader2 size={12} className="animate-spin" /> : null}
+            Nochmal versuchen
+          </button>
+        </div>
+      )}
+
+      {/* Bereits installiert aber nicht verbunden */}
+      {!installing && !status?.connected && (
+        <button
+          onClick={async () => {
+            setInstalling(true)
+            setInstallProgress('Starte OpenClaw...')
+            await window.gerki.openclaw.start()
+            setInstalling(false)
+            await check()
+          }}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-accent/30
+                     text-accent/70 hover:text-accent text-xs mb-2 transition-colors"
+        >
+          ▶ OpenClaw starten (bereits installiert)
+        </button>
       )}
 
       {/* Manueller Download als Fallback */}

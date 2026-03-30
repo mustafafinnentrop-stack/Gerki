@@ -120,6 +120,7 @@ declare global {
         setUrl: (url: string) => Promise<{ success: boolean }>
         openDownload: () => Promise<{ success: boolean; url: string }>
         installAuto: () => Promise<{ success: boolean; error?: string }>
+        start: () => Promise<{ success: boolean; error?: string }>
       }
 
       // ── Ollama (lokale KI) ────────────────────────────────────────
