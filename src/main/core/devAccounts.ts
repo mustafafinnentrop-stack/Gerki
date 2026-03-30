@@ -12,7 +12,7 @@ import type { RemoteUser } from './remoteAuth'
 const DEV_PASSWORD = 'GerkiDev2026!'
 
 const DEV_ACCOUNTS: Array<{ email: string; username: string; name: string }> = [
-  { email: 'andre.hannuschke@gerki.app', username: 'andre.hannuschke', name: 'Andre Hannuschke' },
+  { email: 'andrehannuschke0@gmail.com', username: 'andre.hannuschke', name: 'Andre Hannuschke' },
   { email: 'mustafa.yildirim@gerki.app', username: 'mustafa.yildirim', name: 'Mustafa Yildirim' }
 ]
 
