@@ -35,8 +35,14 @@ yarn-error.log*
 # Electron builder cache
 .cache/
 
-# Extracted release folders (only .exe/.zip/.7z files belong in releases/)
-releases/*/
-releases/**/*.pak
-releases/**/*.dll
-releases/**/*.exe.bak
+# Installer-Binaries werden via GitHub Releases verteilt, nicht im Git-Repo
+setup/windows/*.exe
+setup/windows/*.msi
+setup/windows/win-unpacked/
+setup/mac/*.dmg
+setup/mac/mac-unpacked/
+# dist/ Buildartefakte
+dist/*.exe
+dist/*.dmg
+dist/*.zip
+dist/*.7z
