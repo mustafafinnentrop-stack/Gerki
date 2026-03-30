@@ -119,6 +119,7 @@ declare global {
         screenshot: () => Promise<{ success: boolean; image?: string; width?: number; height?: number; error?: string }>
         setUrl: (url: string) => Promise<{ success: boolean }>
         openDownload: () => Promise<{ success: boolean; url: string }>
+        installAuto: () => Promise<{ success: boolean; error?: string }>
       }
 
       // ── Ollama (lokale KI) ────────────────────────────────────────

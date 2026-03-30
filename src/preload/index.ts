@@ -53,7 +53,8 @@ const gerki = {
       ipcRenderer.invoke('openclaw:action', action),
     screenshot: () => ipcRenderer.invoke('openclaw:screenshot'),
     setUrl: (url: string) => ipcRenderer.invoke('openclaw:set-url', url),
-    openDownload: () => ipcRenderer.invoke('openclaw:open-download')
+    openDownload: () => ipcRenderer.invoke('openclaw:open-download'),
+    installAuto: () => ipcRenderer.invoke('openclaw:install-auto')
   },
 
   // ── Ollama (lokale KI) ────────────────────────────────────────────

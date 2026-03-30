@@ -263,16 +263,49 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('openclaw:open-download', async () => {
-    // Erkennt Plattform und öffnet den passenden Download-Link
-    const platform = process.platform
-    const urls: Record<string, string> = {
-      win32:  'https://openclaw.io/download/windows',
-      darwin: 'https://openclaw.io/download/mac',
-      linux:  'https://openclaw.io/download/linux'
+    await shell.openExternal('https://openclaw.ai')
+    return { success: true, url: 'https://openclaw.ai' }
+  })
+
+  ipcMain.handle('openclaw:install-auto', async () => {
+    try {
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Installiere Openclaw...', percent: 10 })
+
+      const command = process.platform === 'win32'
+        ? 'powershell -c "irm https://openclaw.ai/install.ps1 | iex"'
+        : 'curl -fsSL https://openclaw.ai/install.sh | bash'
+
+      await new Promise<void>((resolve, reject) => {
+        const child = exec(command, { timeout: 120000 }, (error) => {
+          if (error) reject(error)
+          else resolve()
+        })
+        child.stdout?.on('data', (data: string) => {
+          mainWindow.webContents.send('openclaw:install-progress', {
+            status: data.toString().trim().slice(0, 80),
+            percent: 50
+          })
+        })
+      })
+
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Prüfe Verbindung...', percent: 90 })
+
+      // Warte bis Openclaw-Server erreichbar ist (max 20s)
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 2000))
+        try {
+          const res = await fetch('http://localhost:8765/status', { signal: AbortSignal.timeout(2000) })
+          if (res.ok) {
+            mainWindow.webContents.send('openclaw:install-progress', { status: 'Openclaw bereit!', percent: 100 })
+            return { success: true }
+          }
+        } catch { /* noch nicht bereit */ }
+      }
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
     }
-    const url = urls[platform] ?? 'https://openclaw.io/download'
-    await shell.openExternal(url)
-    return { success: true, url }
   })
 
   // =====================================================
