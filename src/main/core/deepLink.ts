@@ -14,7 +14,7 @@ export async function handleDeepLink(url: string, mainWindow: BrowserWindow): Pr
     const parsed = new URL(url)
 
     // gerki-app://auth?token=JWT_TOKEN
-    if (parsed.hostname === 'auth' || parsed.pathname === '//auth') {
+    if (parsed.hostname === 'auth') {
       const token = parsed.searchParams.get('token')
       if (!token) return
 

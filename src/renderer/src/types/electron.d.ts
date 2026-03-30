@@ -150,6 +150,7 @@ declare global {
       setup: {
         isComplete: () => Promise<{ complete: boolean }>
         markComplete: () => Promise<{ success: boolean }>
+        openRegister: () => Promise<{ success: boolean }>
         openAnthropic: () => Promise<{ success: boolean }>
         openOpenai: () => Promise<{ success: boolean }>
       }
@@ -170,10 +171,10 @@ declare global {
           error?: string
           source?: 'remote' | 'cache' | 'local'
         }>
-        currentUser: () => Promise<{ id: string; username: string; email: string; plan: string; created_at: string } | null>
+        currentUser: () => Promise<{ id: string; username: string; email: string; plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise'; created_at: string } | null>
         logout: () => Promise<{ success: boolean }>
         changePassword: (userId: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>
-        setPlan: (userId: string, plan: 'free' | 'pro' | 'business') => Promise<{ success: boolean }>
+        setPlan: (userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') => Promise<{ success: boolean }>
         deleteAccount: (userId: string) => Promise<{ success: boolean }>
       }
 

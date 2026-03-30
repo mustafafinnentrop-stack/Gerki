@@ -20,6 +20,8 @@ import { getOpenclawClient } from './openclawClient'
 import { runAgenticLoop } from './agenticLoop'
 import type { AgentStep } from './agenticLoop'
 import { getOllamaClient, DEFAULT_OLLAMA_MODEL } from './ollamaClient'
+import { checkAccess } from './planEnforcement'
+import { getCachedUser } from './remoteAuth'
 import { v4 as uuidv4 } from 'uuid'
 
 export type AIModel = 'claude' | 'gpt-4' | 'gpt-3.5' | 'ollama'
@@ -185,6 +187,14 @@ export async function processMessage(
   const skillSlug = req.forceSkill ?? detectSkill(req.userMessage)
   const skill = getSkill(skillSlug) ?? getSkill('general')!
 
+  // Plan-Enforcement: Skill und Modell prüfen
+  const currentUser = getCachedUser()
+  const userPlan = currentUser?.plan ?? 'free'
+  const access = checkAccess(userPlan, skillSlug, model)
+  if (!access.allowed) {
+    throw new Error(access.error)
+  }
+
   // 2. Memory-Kontext laden
   const memoryContext = buildMemoryContext()
 
@@ -242,7 +252,7 @@ export async function processMessage(
     const apiKey = getSetting('claude_api_key')
     if (!apiKey) throw new Error('Claude API-Schlüssel nicht konfiguriert.')
 
-    const openclawUrl = getSetting('openclaw_url') ?? 'http://localhost:8765'
+    const openclawUrl = getSetting('openclaw_url') ?? 'http://127.0.0.1:8765'
     const isConnected = await getOpenclawClient(openclawUrl).isConnected()
 
     if (isConnected) {
@@ -321,7 +331,7 @@ export async function processMessage(
     ]
 
     const stream = await client.messages.stream({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4096,
       system: systemPrompt,
       messages
@@ -345,7 +355,7 @@ export async function processMessage(
     ]
 
     const stream = await client.chat.completions.create({
-      model: model === 'gpt-4' ? 'gpt-4-turbo-preview' : 'gpt-3.5-turbo',
+      model: model === 'gpt-4' ? 'gpt-4-turbo' : 'gpt-3.5-turbo',
       messages,
       stream: true
     })

@@ -71,6 +71,7 @@ const gerki = {
   setup: {
     isComplete: () => ipcRenderer.invoke('setup:is-complete'),
     markComplete: () => ipcRenderer.invoke('setup:mark-complete'),
+    openRegister: () => ipcRenderer.invoke('setup:open-register'),
     openAnthropic: () => ipcRenderer.invoke('setup:open-anthropic'),
     openOpenai: () => ipcRenderer.invoke('setup:open-openai')
   },
@@ -86,7 +87,7 @@ const gerki = {
     logout: () => ipcRenderer.invoke('auth:logout'),
     changePassword: (userId: string, oldPassword: string, newPassword: string) =>
       ipcRenderer.invoke('auth:change-password', userId, oldPassword, newPassword),
-    setPlan: (userId: string, plan: 'free' | 'pro' | 'business') =>
+    setPlan: (userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') =>
       ipcRenderer.invoke('auth:set-plan', userId, plan),
     deleteAccount: (userId: string) => ipcRenderer.invoke('auth:delete-account', userId)
   },

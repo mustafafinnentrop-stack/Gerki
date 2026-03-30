@@ -32,7 +32,7 @@ export default function SettingsPage({}: SettingsPageProps): React.JSX.Element {
   const [settings, setSettings] = useState<SettingsData>({})
   const [claudeKey, setClaudeKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
-  const [openclawUrl, setOpenclawUrl] = useState('http://localhost:8765')
+  const [openclawUrl, setOpenclawUrl] = useState('http://127.0.0.1:8765')
   const [openclawStatus, setOpenclawStatus] = useState<OpenclawStatus | null>(null)
   const [savingClaude, setSavingClaude] = useState(false)
   const [savingOpenai, setSavingOpenai] = useState(false)

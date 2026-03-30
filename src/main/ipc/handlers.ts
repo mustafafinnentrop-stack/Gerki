@@ -130,7 +130,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('settings:set-model', (_event, model: string) => {
-    setPreferredModel(model as 'claude' | 'gpt-4' | 'gpt-3.5')
+    setPreferredModel(model as 'claude' | 'gpt-4' | 'gpt-3.5' | 'ollama')
     return { success: true }
   })
 
@@ -221,19 +221,19 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('openclaw:status', async () => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const oc = getOpenclawClient(url)
       const connected = await oc.isConnected()
       const version = connected ? await oc.getVersion() : null
       return { connected, url, version }
     } catch {
-      return { connected: false, url: 'http://localhost:8765', version: null }
+      return { connected: false, url: 'http://127.0.0.1:8765', version: null }
     }
   })
 
   ipcMain.handle('openclaw:action', async (_event, action: Record<string, unknown>) => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const res = await fetch(`${url}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -248,7 +248,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('openclaw:screenshot', async () => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const oc = getOpenclawClient(url)
       return await oc.screenshot()
     } catch (error) {
@@ -269,14 +269,10 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('openclaw:install-auto', async () => {
     try {
-      mainWindow.webContents.send('openclaw:install-progress', { status: 'Installiere Openclaw...', percent: 10 })
-
-      const command = process.platform === 'win32'
-        ? 'powershell -c "irm https://openclaw.ai/install.ps1 | iex"'
-        : 'curl -fsSL https://openclaw.ai/install.sh | bash'
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Starte Openclaw via Ollama...', percent: 10 })
 
       await new Promise<void>((resolve, reject) => {
-        const child = exec(command, { timeout: 120000 }, (error) => {
+        const child = exec('ollama launch openclaw', { timeout: 120000 }, (error) => {
           if (error) reject(error)
           else resolve()
         })
@@ -294,7 +290,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
       for (let i = 0; i < 10; i++) {
         await new Promise(r => setTimeout(r, 2000))
         try {
-          const res = await fetch('http://localhost:8765/status', { signal: AbortSignal.timeout(2000) })
+          const res = await fetch('http://127.0.0.1:8765/status', { signal: AbortSignal.timeout(2000) })
           if (res.ok) {
             mainWindow.webContents.send('openclaw:install-progress', { status: 'Openclaw bereit!', percent: 100 })
             return { success: true }
@@ -398,6 +394,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
             })
             res.pipe(file)
             file.on('finish', () => { file.close(); resolve() })
+            file.on('error', reject)
           }).on('error', reject)
         }
         doGet('https://ollama.com/download/OllamaSetup.exe')
@@ -428,6 +425,11 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     } catch (error) {
       return { success: false, error: (error as Error).message }
     }
+  })
+
+  ipcMain.handle('setup:open-register', async () => {
+    await shell.openExternal('https://gerki.app/register')
+    return { success: true }
   })
 
   ipcMain.handle('setup:open-anthropic', async () => {
@@ -496,7 +498,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return changePassword(userId, oldPassword, newPassword)
   })
 
-  ipcMain.handle('auth:set-plan', (_event, userId: string, plan: 'free' | 'pro' | 'business') => {
+  ipcMain.handle('auth:set-plan', (_event, userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') => {
     setUserPlan(userId, plan)
     return { success: true }
   })
