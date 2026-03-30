@@ -373,11 +373,8 @@ export async function processMessage(
   // 8. Antwort speichern
   const messageId = saveMessage(conversationId, 'assistant', responseContent, model, skillSlug)
 
-  // 9. Neue Fakten im Hintergrund extrahieren und ins Memory speichern
-  let newMemory: Array<{ category: string; key: string; value: string }> = []
-
+  // 9. Neue Fakten im Hintergrund extrahieren – niemals die Antwort blockieren
   if (model === 'ollama') {
-    // Ollama: Fakten-Extraktion async im Hintergrund (kein API-Key nötig)
     const ollamaModelForMemory = getSetting('ollama_model') ?? DEFAULT_OLLAMA_MODEL
     extractFactsWithOllama(req.userMessage, responseContent, ollamaModelForMemory)
       .then((facts) => { if (facts.length > 0) rememberFacts(facts, skillSlug) })
@@ -385,8 +382,9 @@ export async function processMessage(
   } else {
     const apiKey = model === 'claude' ? getSetting('claude_api_key') : getSetting('openai_api_key')
     if (apiKey) {
-      newMemory = await extractFacts(req.userMessage, responseContent, model, apiKey)
-      if (newMemory.length > 0) rememberFacts(newMemory, skillSlug)
+      extractFacts(req.userMessage, responseContent, model, apiKey)
+        .then((facts) => { if (facts.length > 0) rememberFacts(facts, skillSlug) })
+        .catch(() => { /* Kein Blocker */ })
     }
   }
 
@@ -396,8 +394,7 @@ export async function processMessage(
     content: responseContent,
     skill: skillSlug,
     model,
-    filesUsed: filesUsed.length > 0 ? filesUsed : undefined,
-    newMemory: newMemory.length > 0 ? newMemory : undefined
+    filesUsed: filesUsed.length > 0 ? filesUsed : undefined
   }
 }
 

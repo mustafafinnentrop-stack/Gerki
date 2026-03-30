@@ -272,23 +272,30 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     try {
       mainWindow.webContents.send('openclaw:install-progress', { status: 'Starte Openclaw via Ollama...', percent: 10 })
 
-      await new Promise<void>((resolve, reject) => {
-        const child = exec('ollama launch openclaw', { timeout: 120000 }, (error) => {
-          if (error) reject(error)
-          else resolve()
-        })
-        child.stdout?.on('data', (data: string) => {
-          mainWindow.webContents.send('openclaw:install-progress', {
-            status: data.toString().trim().slice(0, 80),
-            percent: 50
-          })
-        })
-      })
+      if (process.platform === 'win32') {
+        // Windows: Firewall-Regel für Port 8765 hinzufügen (UAC-Prompt erscheint)
+        mainWindow.webContents.send('openclaw:install-progress', { status: 'Firewall-Regel für Port 8765 wird hinzugefügt...', percent: 20 })
+        exec(
+          'powershell -Command "Start-Process powershell -ArgumentList \'-Command netsh advfirewall firewall add rule name=\\\"OpenClaw 8765\\\" dir=in action=allow protocol=TCP localport=8765\' -Verb RunAs -Wait"',
+          () => { /* Fehler ignorieren falls User abbricht */ }
+        )
+        await new Promise(r => setTimeout(r, 3000))
 
-      mainWindow.webContents.send('openclaw:install-progress', { status: 'Prüfe Verbindung...', percent: 90 })
+        // Windows: ollama launch openclaw als losgelöster Hintergrundprozess
+        mainWindow.webContents.send('openclaw:install-progress', { status: 'Starte OpenClaw im Hintergrund...', percent: 40 })
+        const child = exec('start /B ollama launch openclaw', { windowsHide: true })
+        child.unref()
+      } else {
+        // macOS/Linux: direkt im Hintergrund starten
+        mainWindow.webContents.send('openclaw:install-progress', { status: 'Starte OpenClaw im Hintergrund...', percent: 40 })
+        const child = exec('ollama launch openclaw &')
+        child.unref()
+      }
 
-      // Warte bis Openclaw-Server erreichbar ist (max 20s)
-      for (let i = 0; i < 10; i++) {
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Warte auf Verbindung... (bis zu 30s)', percent: 60 })
+
+      // Warte bis Openclaw-Server erreichbar ist (max 30s)
+      for (let i = 0; i < 15; i++) {
         await new Promise(r => setTimeout(r, 2000))
         try {
           const res = await fetch('http://127.0.0.1:8765/status', { signal: AbortSignal.timeout(2000) })
@@ -299,6 +306,30 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
         } catch { /* noch nicht bereit */ }
       }
 
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  // OpenClaw im Hintergrund starten (ohne neu installieren)
+  ipcMain.handle('openclaw:start', async () => {
+    try {
+      if (process.platform === 'win32') {
+        const child = exec('start /B ollama launch openclaw', { windowsHide: true })
+        child.unref()
+      } else {
+        const child = exec('ollama launch openclaw &')
+        child.unref()
+      }
+      // Kurz warten dann Status prüfen
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 2000))
+        try {
+          const res = await fetch('http://127.0.0.1:8765/status', { signal: AbortSignal.timeout(2000) })
+          if (res.ok) return { success: true }
+        } catch { /* noch nicht bereit */ }
+      }
       return { success: true }
     } catch (error) {
       return { success: false, error: (error as Error).message }
