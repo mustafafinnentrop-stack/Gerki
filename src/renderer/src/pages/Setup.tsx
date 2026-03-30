@@ -443,6 +443,18 @@ function OllamaStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void
 function OpenclawStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }): React.JSX.Element {
   const [checking, setChecking] = useState(false)
   const [status, setStatus] = useState<{ connected: boolean; version: string | null } | null>(null)
+  const [installing, setInstalling] = useState(false)
+  const [installProgress, setInstallProgress] = useState('')
+  const [installError, setInstallError] = useState('')
+
+  useEffect(() => {
+    check()
+    const unsub = window.gerki.on('openclaw:install-progress', (data: unknown) => {
+      const d = data as { status: string }
+      setInstallProgress(d.status)
+    })
+    return unsub
+  }, [])
 
   const check = async () => {
     setChecking(true)
@@ -454,8 +466,17 @@ function OpenclawStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => vo
     }
   }
 
-  const download = async () => {
-    await window.gerki.openclaw.openDownload()
+  const autoInstall = async () => {
+    setInstalling(true)
+    setInstallError('')
+    setInstallProgress('Starte Installation...')
+    const result = await window.gerki.openclaw.installAuto()
+    setInstalling(false)
+    if (result.success) {
+      await check()
+    } else {
+      setInstallError(result.error ?? 'Installation fehlgeschlagen')
+    }
   }
 
   return (
@@ -488,31 +509,36 @@ function OpenclawStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => vo
         </div>
       </div>
 
-      {/* Installations-Schritte */}
-      <div className="space-y-2 mb-5">
-        <p className="text-xs font-medium text-white/60 uppercase tracking-wider">Installation</p>
-        {[
-          { num: 1, text: 'Klicke "Openclaw herunterladen" unten', done: false },
-          { num: 2, text: 'Installiere die heruntergeladene Datei', done: false },
-          { num: 3, text: 'Starte Openclaw (startet automatisch im Hintergrund)', done: false },
-          { num: 4, text: 'Klicke "Verbindung testen" – fertig!', done: false }
-        ].map(({ num, text }) => (
-          <div key={num} className="flex items-start gap-3 text-xs text-white/50">
-            <span className="w-5 h-5 rounded-full bg-white/5 border border-white/10 text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-              {num}
-            </span>
-            {text}
-          </div>
-        ))}
-      </div>
-
-      {/* Download Button */}
+      {/* Auto-Installer */}
       <button
-        onClick={download}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 text-sm font-medium mb-3 transition-colors"
+        onClick={autoInstall}
+        disabled={installing || status?.connected === true}
+        className="w-full py-3 rounded-2xl bg-accent hover:bg-accent/80 disabled:bg-accent/20 disabled:text-white/30
+                   text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 mb-2"
       >
-        <ExternalLink size={14} />
-        Openclaw herunterladen
+        {installing ? (
+          <><Loader2 size={14} className="animate-spin" />{installProgress || 'Installiere...'}</>
+        ) : status?.connected ? (
+          <><CheckCircle size={14} className="text-green-400" />Openclaw ist bereit!</>
+        ) : (
+          'Openclaw automatisch installieren'
+        )}
+      </button>
+
+      {installError && (
+        <p className="flex items-center gap-1 text-xs text-red-400 mb-2 px-1">
+          <AlertCircle size={12} />{installError}
+        </p>
+      )}
+
+      {/* Manueller Download als Fallback */}
+      <button
+        onClick={() => window.gerki.openclaw.openDownload()}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10
+                   text-white/40 hover:text-white/70 text-xs mb-3 transition-colors"
+      >
+        <ExternalLink size={12} />
+        Manuell installieren (openclaw.ai)
       </button>
 
       {/* Verbindung testen */}

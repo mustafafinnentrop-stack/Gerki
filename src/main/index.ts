@@ -9,6 +9,22 @@ import { optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc/handlers'
 import { restoreWatchers } from './core/fileIndexer'
 import { getDB, closeDB } from './db/database'
+import { handleDeepLink } from './core/deepLink'
+
+// gerki-app:// Protocol Handler registrieren
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('gerki-app', process.execPath, [process.argv[1]])
+  }
+} else {
+  app.setAsDefaultProtocolClient('gerki-app')
+}
+
+// Windows: Single-Instance Lock (Deep-Links kommen als neues Prozess-Argument)
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+}
 
 let mainWindow: BrowserWindow | null = null
 
@@ -67,6 +83,21 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+
+  // macOS: Deep-Link kommt über open-url Event
+  app.on('open-url', (_event, url) => {
+    if (mainWindow) handleDeepLink(url, mainWindow)
+  })
+
+  // Windows/Linux: zweite Instanz wird geblockt, URL kommt als Argument
+  app.on('second-instance', (_event, argv) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+      const url = argv.find((arg) => arg.startsWith('gerki-app://'))
+      if (url) handleDeepLink(url, mainWindow)
+    }
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

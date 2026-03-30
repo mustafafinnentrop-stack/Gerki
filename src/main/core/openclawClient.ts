@@ -51,7 +51,7 @@ export class OpenclawClient {
   private baseUrl: string
   private timeout: number
 
-  constructor(url = 'http://localhost:8765', timeout = 15000) {
+  constructor(url = 'http://127.0.0.1:8765', timeout = 15000) {
     this.baseUrl = url.replace(/\/$/, '')
     this.timeout = timeout
   }
@@ -164,7 +164,7 @@ let _client: OpenclawClient | null = null
 
 export function getOpenclawClient(url?: string): OpenclawClient {
   if (url || !_client) {
-    _client = new OpenclawClient(url ?? 'http://localhost:8765')
+    _client = new OpenclawClient(url ?? 'http://127.0.0.1:8765')
   }
   return _client
 }

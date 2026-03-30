@@ -119,6 +119,7 @@ declare global {
         screenshot: () => Promise<{ success: boolean; image?: string; width?: number; height?: number; error?: string }>
         setUrl: (url: string) => Promise<{ success: boolean }>
         openDownload: () => Promise<{ success: boolean; url: string }>
+        installAuto: () => Promise<{ success: boolean; error?: string }>
       }
 
       // ── Ollama (lokale KI) ────────────────────────────────────────
@@ -149,6 +150,7 @@ declare global {
       setup: {
         isComplete: () => Promise<{ complete: boolean }>
         markComplete: () => Promise<{ success: boolean }>
+        openRegister: () => Promise<{ success: boolean }>
         openAnthropic: () => Promise<{ success: boolean }>
         openOpenai: () => Promise<{ success: boolean }>
       }
@@ -160,6 +162,8 @@ declare global {
           user?: { id: string; username: string; email: string; plan: string; created_at: string }
           error?: string
         }>
+        /** Öffnet gerki.app/login?source=app im Browser für Google OAuth */
+        loginWithGoogle: () => Promise<{ success: boolean }>
         /** Remote-first Login: versucht gerki.app API, fällt auf lokale Auth zurück (offline) */
         login: (emailOrUsername: string, password: string) => Promise<{
           success: boolean
@@ -167,10 +171,10 @@ declare global {
           error?: string
           source?: 'remote' | 'cache' | 'local'
         }>
-        currentUser: () => Promise<{ id: string; username: string; email: string; plan: string; created_at: string } | null>
+        currentUser: () => Promise<{ id: string; username: string; email: string; plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise'; created_at: string } | null>
         logout: () => Promise<{ success: boolean }>
         changePassword: (userId: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>
-        setPlan: (userId: string, plan: 'free' | 'pro' | 'business') => Promise<{ success: boolean }>
+        setPlan: (userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') => Promise<{ success: boolean }>
         deleteAccount: (userId: string) => Promise<{ success: boolean }>
       }
 

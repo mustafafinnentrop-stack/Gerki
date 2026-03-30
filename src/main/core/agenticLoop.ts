@@ -282,7 +282,7 @@ export async function runAgenticLoop(params: AgentLoopParams): Promise<string> {
     systemPrompt,
     messages,
     apiKey,
-    openclawUrl = 'http://localhost:8765',
+    openclawUrl = 'http://127.0.0.1:8765',
     maxIterations = 20,
     onToken,
     onStep

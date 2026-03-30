@@ -53,7 +53,8 @@ const gerki = {
       ipcRenderer.invoke('openclaw:action', action),
     screenshot: () => ipcRenderer.invoke('openclaw:screenshot'),
     setUrl: (url: string) => ipcRenderer.invoke('openclaw:set-url', url),
-    openDownload: () => ipcRenderer.invoke('openclaw:open-download')
+    openDownload: () => ipcRenderer.invoke('openclaw:open-download'),
+    installAuto: () => ipcRenderer.invoke('openclaw:install-auto')
   },
 
   // ── Ollama (lokale KI) ────────────────────────────────────────────
@@ -70,6 +71,7 @@ const gerki = {
   setup: {
     isComplete: () => ipcRenderer.invoke('setup:is-complete'),
     markComplete: () => ipcRenderer.invoke('setup:mark-complete'),
+    openRegister: () => ipcRenderer.invoke('setup:open-register'),
     openAnthropic: () => ipcRenderer.invoke('setup:open-anthropic'),
     openOpenai: () => ipcRenderer.invoke('setup:open-openai')
   },
@@ -80,11 +82,12 @@ const gerki = {
       ipcRenderer.invoke('auth:register', username, email, password),
     login: (emailOrUsername: string, password: string) =>
       ipcRenderer.invoke('auth:login', emailOrUsername, password),
+    loginWithGoogle: () => ipcRenderer.invoke('auth:login-google'),
     currentUser: () => ipcRenderer.invoke('auth:current-user'),
     logout: () => ipcRenderer.invoke('auth:logout'),
     changePassword: (userId: string, oldPassword: string, newPassword: string) =>
       ipcRenderer.invoke('auth:change-password', userId, oldPassword, newPassword),
-    setPlan: (userId: string, plan: 'free' | 'pro' | 'business') =>
+    setPlan: (userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') =>
       ipcRenderer.invoke('auth:set-plan', userId, plan),
     deleteAccount: (userId: string) => ipcRenderer.invoke('auth:delete-account', userId)
   },

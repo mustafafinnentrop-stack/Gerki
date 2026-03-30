@@ -130,7 +130,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('settings:set-model', (_event, model: string) => {
-    setPreferredModel(model as 'claude' | 'gpt-4' | 'gpt-3.5')
+    setPreferredModel(model as 'claude' | 'gpt-4' | 'gpt-3.5' | 'ollama')
     return { success: true }
   })
 
@@ -221,19 +221,19 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('openclaw:status', async () => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const oc = getOpenclawClient(url)
       const connected = await oc.isConnected()
       const version = connected ? await oc.getVersion() : null
       return { connected, url, version }
     } catch {
-      return { connected: false, url: 'http://localhost:8765', version: null }
+      return { connected: false, url: 'http://127.0.0.1:8765', version: null }
     }
   })
 
   ipcMain.handle('openclaw:action', async (_event, action: Record<string, unknown>) => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const res = await fetch(`${url}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -248,7 +248,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('openclaw:screenshot', async () => {
     try {
-      const url = getSettings().openclaw_url ?? 'http://localhost:8765'
+      const url = getSettings().openclaw_url ?? 'http://127.0.0.1:8765'
       const oc = getOpenclawClient(url)
       return await oc.screenshot()
     } catch (error) {
@@ -263,16 +263,45 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('openclaw:open-download', async () => {
-    // Erkennt Plattform und öffnet den passenden Download-Link
-    const platform = process.platform
-    const urls: Record<string, string> = {
-      win32:  'https://openclaw.io/download/windows',
-      darwin: 'https://openclaw.io/download/mac',
-      linux:  'https://openclaw.io/download/linux'
+    await shell.openExternal('https://openclaw.ai')
+    return { success: true, url: 'https://openclaw.ai' }
+  })
+
+  ipcMain.handle('openclaw:install-auto', async () => {
+    try {
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Starte Openclaw via Ollama...', percent: 10 })
+
+      await new Promise<void>((resolve, reject) => {
+        const child = exec('ollama launch openclaw', { timeout: 120000 }, (error) => {
+          if (error) reject(error)
+          else resolve()
+        })
+        child.stdout?.on('data', (data: string) => {
+          mainWindow.webContents.send('openclaw:install-progress', {
+            status: data.toString().trim().slice(0, 80),
+            percent: 50
+          })
+        })
+      })
+
+      mainWindow.webContents.send('openclaw:install-progress', { status: 'Prüfe Verbindung...', percent: 90 })
+
+      // Warte bis Openclaw-Server erreichbar ist (max 20s)
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 2000))
+        try {
+          const res = await fetch('http://127.0.0.1:8765/status', { signal: AbortSignal.timeout(2000) })
+          if (res.ok) {
+            mainWindow.webContents.send('openclaw:install-progress', { status: 'Openclaw bereit!', percent: 100 })
+            return { success: true }
+          }
+        } catch { /* noch nicht bereit */ }
+      }
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
     }
-    const url = urls[platform] ?? 'https://openclaw.io/download'
-    await shell.openExternal(url)
-    return { success: true, url }
   })
 
   // =====================================================
@@ -365,6 +394,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
             })
             res.pipe(file)
             file.on('finish', () => { file.close(); resolve() })
+            file.on('error', reject)
           }).on('error', reject)
         }
         doGet('https://ollama.com/download/OllamaSetup.exe')
@@ -397,6 +427,11 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     }
   })
 
+  ipcMain.handle('setup:open-register', async () => {
+    await shell.openExternal('https://gerki.app/register')
+    return { success: true }
+  })
+
   ipcMain.handle('setup:open-anthropic', async () => {
     await shell.openExternal('https://console.anthropic.com/settings/keys')
     return { success: true }
@@ -413,6 +448,13 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('auth:register', (_event, username: string, email: string, password: string) => {
     return registerUser(username, email, password)
+  })
+
+  ipcMain.handle('auth:login-google', async () => {
+    // Öffnet gerki.app/login?source=app im Systembrowser
+    // Nach Google Login leitet gerki.app zu gerki-app://auth?token=JWT weiter
+    await shell.openExternal('https://gerki.app/login?source=app')
+    return { success: true }
   })
 
   // Remote-first Login: versucht gerki.app API, fällt auf lokale SQLite-Auth zurück (offline)
@@ -456,7 +498,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return changePassword(userId, oldPassword, newPassword)
   })
 
-  ipcMain.handle('auth:set-plan', (_event, userId: string, plan: 'free' | 'pro' | 'business') => {
+  ipcMain.handle('auth:set-plan', (_event, userId: string, plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise') => {
     setUserPlan(userId, plan)
     return { success: true }
   })

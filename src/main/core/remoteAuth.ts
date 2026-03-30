@@ -25,12 +25,13 @@ function getApiBase(): string {
 
 const TOKEN_KEY = 'remote_auth_token'
 const USER_CACHE_KEY = 'remote_user_cache'
+const LAST_VERIFIED_KEY = 'remote_last_verified_at'
 
 export interface RemoteUser {
   id: string
   email: string
   username: string
-  plan: 'free' | 'pro' | 'business'
+  plan: 'free' | 'standard' | 'pro' | 'business' | 'enterprise'
   created_at: string
 }
 
@@ -83,9 +84,16 @@ export function clearToken(): void {
 // ── Nutzer-Cache (für Offline-Betrieb) ─────────────────────────────────────
 
 function cacheUser(user: RemoteUser): void {
-  getDB()
-    .prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
-    .run(USER_CACHE_KEY, JSON.stringify(user))
+  const db = getDB()
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(USER_CACHE_KEY, JSON.stringify(user))
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(LAST_VERIFIED_KEY, String(Date.now()))
+}
+
+export function getLastVerifiedAt(): number {
+  const row = getDB()
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get(LAST_VERIFIED_KEY) as { value: string } | undefined
+  return row ? parseInt(row.value, 10) : 0
 }
 
 export function getCachedUser(): RemoteUser | null {
@@ -187,4 +195,13 @@ export async function verifyStoredToken(): Promise<RemoteUser | null> {
 /** Gespeichertes Token für autorisierte API-Aufrufe abrufen */
 export function getStoredToken(): string | null {
   return loadToken()
+}
+
+/**
+ * Deep-Link Token (von gerki-app://auth?token=...) speichern und User laden.
+ * Wird nach Google OAuth Callback aufgerufen.
+ */
+export async function storeDeepLinkToken(token: string): Promise<RemoteUser | null> {
+  storeToken(token)
+  return verifyStoredToken()
 }

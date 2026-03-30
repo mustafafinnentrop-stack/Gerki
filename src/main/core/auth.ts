@@ -30,7 +30,7 @@ export function registerUser(
 ): { success: boolean; user?: UserRecord; error?: string } {
   if (!username || username.length < 2) return { success: false, error: 'Nutzername muss mindestens 2 Zeichen haben.' }
   if (!email || !email.includes('@')) return { success: false, error: 'Ungültige E-Mail-Adresse.' }
-  if (!password || password.length < 6) return { success: false, error: 'Passwort muss mindestens 6 Zeichen haben.' }
+  if (!password || password.length < 8) return { success: false, error: 'Passwort muss mindestens 8 Zeichen haben.' }
 
   const db = getDB()
   const emailLower = email.toLowerCase().trim()
