@@ -95,9 +95,7 @@
     },
     "dmg": {
       "title": "Gerki Installer",
-      "background": null,
       "window": { "width": 540, "height": 380 },
-      "compression": "store",
       "writeUpdateInfo": false
     },
     "linux": {
