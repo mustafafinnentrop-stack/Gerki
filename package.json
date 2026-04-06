@@ -1,6 +1,6 @@
 {
   "name": "gerki",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Gerki – Alle KIs. Eine App. Ihr PC. Persönlicher Assistent mit Claude, ChatGPT und Openclaw.",
   "main": "out/main/index.js",
   "scripts": {
@@ -68,10 +68,12 @@
       "output": "dist"
     },
     "files": [
-      "out/**/*"
+      "out/**/*",
+      "node_modules/better-sqlite3/**/*"
     ],
     "asarUnpack": [
-      "**/*.node"
+      "**/*.node",
+      "node_modules/better-sqlite3/**/*"
     ],
     "extraResources": [],
     "protocols": [

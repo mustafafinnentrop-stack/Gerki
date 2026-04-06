@@ -13,6 +13,19 @@ import { getDB, closeDB } from './db/database'
 import { handleDeepLink } from './core/deepLink'
 import { flushSyncQueue } from './core/cloudSync'
 
+// ── Globale Fehlerbehandlung (zeigt Fehlermeldung statt lautlos zu sterben) ──
+process.on('uncaughtException', (err) => {
+  dialog.showErrorBox(
+    'Gerki – Startfehler',
+    `Die App konnte nicht gestartet werden:\n\n${err.message}\n\n${err.stack ?? ''}`
+  )
+  app.quit()
+})
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Gerki] Unhandled Rejection:', reason)
+})
+
 // gerki-app:// Protocol Handler registrieren
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -31,6 +44,8 @@ if (!gotLock) {
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
+  const isWindows = process.platform === 'win32'
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -38,8 +53,9 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 16 },
+    // hiddenInset ist macOS-only; auf Windows normale Titelleiste
+    titleBarStyle: isWindows ? 'default' : 'hiddenInset',
+    ...(isWindows ? {} : { trafficLightPosition: { x: 16, y: 16 } }),
     backgroundColor: '#05080f',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -52,6 +68,13 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.show()
   })
+
+  // Fallback: Fenster nach 10s anzeigen falls ready-to-show nicht feuert
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isVisible()) {
+      mainWindow.show()
+    }
+  }, 10000)
 
   // Externe Links im Systembrowser öffnen
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -130,8 +153,17 @@ function setupAutoUpdater(): void {
 
 // App bereit
 app.whenReady().then(() => {
-  // DB initialisieren (Schema + Seeds)
-  getDB()
+  // DB initialisieren (Schema + Seeds) – Fehler als Dialog zeigen
+  try {
+    getDB()
+  } catch (err) {
+    dialog.showErrorBox(
+      'Gerki – Datenbankfehler',
+      `Die Datenbank konnte nicht geöffnet werden:\n\n${(err as Error).message}\n\nBitte starte die App neu. Falls der Fehler bleibt, deinstalliere und reinstalliere Gerki.`
+    )
+    app.quit()
+    return
+  }
 
   // Datei-Watcher wiederherstellen
   try {
