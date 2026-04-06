@@ -190,6 +190,20 @@ declare global {
         }>
       }
 
+      // ── Dokument-Export ───────────────────────────────────────────
+      document: {
+        save: (content: string, format: 'pdf' | 'docx' | 'txt', suggestedName: string) => Promise<{
+          success: boolean
+          path?: string
+          error?: string
+        }>
+      }
+
+      // ── Plan Enforcement ──────────────────────────────────────────
+      plan: {
+        offlineWarning: () => Promise<{ daysRemaining: number; warn: boolean } | null>
+      }
+
       // ── Events ────────────────────────────────────────────────────
       on: (channel: string, callback: (...args: unknown[]) => void) => () => void
     }

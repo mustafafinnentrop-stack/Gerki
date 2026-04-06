@@ -21,7 +21,8 @@ import {
   Paperclip,
   X,
   Crown,
-  Lock
+  Lock,
+  Download
 } from 'lucide-react'
 import type { AgentStep } from '../types/electron'
 
@@ -117,6 +118,61 @@ function CopyButton({ text }: { text: string }): React.JSX.Element {
   )
 }
 
+// ── Save Document Button ────────────────────────────────────────────────
+
+function SaveDocButton({ content }: { content: string }): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const suggestedName = content.slice(0, 40).replace(/[^a-zA-ZäöüÄÖÜß0-9 ]/g, '').trim() || 'Gerki-Dokument'
+
+  const save = async (format: 'pdf' | 'docx' | 'txt') => {
+    setOpen(false)
+    setSaving(true)
+    try {
+      const result = await window.gerki.document.save(content, format, suggestedName)
+      if (result?.success) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2500)
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="Als Dokument speichern"
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/60"
+      >
+        {saving ? (
+          <Loader2 size={13} className="animate-spin text-white/50" />
+        ) : saved ? (
+          <Check size={13} className="text-green-400" />
+        ) : (
+          <Download size={13} />
+        )}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl py-1 w-36">
+          <button onClick={() => save('pdf')} className="w-full text-left px-3 py-2 text-xs text-white/80 hover:bg-white/10 flex items-center gap-2">
+            <FileText size={12} className="text-red-400" /> Als PDF
+          </button>
+          <button onClick={() => save('docx')} className="w-full text-left px-3 py-2 text-xs text-white/80 hover:bg-white/10 flex items-center gap-2">
+            <FileText size={12} className="text-blue-400" /> Als Word (.docx)
+          </button>
+          <button onClick={() => save('txt')} className="w-full text-left px-3 py-2 text-xs text-white/80 hover:bg-white/10 flex items-center gap-2">
+            <FileText size={12} className="text-white/50" /> Als Text (.txt)
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Message Bubble ──────────────────────────────────────────────────────
 
 function MessageBubble({ message }: { message: Message }): React.JSX.Element {
@@ -181,9 +237,10 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
               </ReactMarkdown>
             )}
           </div>
-          {/* Copy button (always visible on hover) */}
-          <div className={`absolute top-1 ${isUser ? 'left-0 -translate-x-full pr-1' : 'right-0 translate-x-full pl-1'}`}>
+          {/* Action buttons (copy + save) */}
+          <div className={`absolute top-1 ${isUser ? 'left-0 -translate-x-full pr-1' : 'right-0 translate-x-full pl-1'} flex flex-col gap-0.5`}>
             <CopyButton text={message.content} />
+            {!isUser && <SaveDocButton content={message.content} />}
           </div>
         </div>
 

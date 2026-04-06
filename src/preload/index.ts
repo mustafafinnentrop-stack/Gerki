@@ -103,6 +103,12 @@ const gerki = {
     pick: () => ipcRenderer.invoke('chat:pick-file')
   },
 
+  // ── Dokument-Export ───────────────────────────────────────────────
+  document: {
+    save: (content: string, format: 'pdf' | 'docx' | 'txt', suggestedName: string) =>
+      ipcRenderer.invoke('document:save', content, format, suggestedName)
+  },
+
   // ── Events ────────────────────────────────────────────────────────
   on: (channel: string, callback: (...args: unknown[]) => void) => {
     const wrapped = (_event: Electron.IpcRendererEvent, ...args: unknown[]) => callback(...args)
