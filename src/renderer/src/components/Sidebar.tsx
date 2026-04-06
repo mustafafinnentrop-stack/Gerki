@@ -84,7 +84,7 @@ export default function Sidebar({
   return (
     <aside className="w-60 flex flex-col bg-surface border-r border-white/5 h-screen">
       {/* Logo / Header */}
-      <div className="drag-region h-12 flex items-center px-4 border-b border-white/5">
+      <div className="drag-region h-12 flex items-center pl-[76px] pr-4 border-b border-white/5">
         <div className="no-drag flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Bot size={16} className="text-white" />

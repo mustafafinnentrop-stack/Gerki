@@ -51,6 +51,7 @@ import {
 } from '../core/auth'
 import { getOfflineWarning } from '../core/planEnforcement'
 import { getLastVerifiedAt } from '../core/remoteAuth'
+import { saveDocument } from '../core/documentExport'
 
 export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
@@ -607,5 +608,10 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     } catch (error) {
       return { success: false, error: (error as Error).message }
     }
+  })
+
+  // ── Dokument-Export ─────────────────────────────────────────────────
+  ipcMain.handle('document:save', async (_event, content: string, format: 'pdf' | 'docx' | 'txt', suggestedName: string) => {
+    return saveDocument(content, format, suggestedName, mainWindow)
   })
 }

@@ -1,6 +1,6 @@
 {
   "name": "gerki",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Gerki – Alle KIs. Eine App. Ihr PC. Persönlicher Assistent mit Claude, ChatGPT und Openclaw.",
   "main": "out/main/index.js",
   "scripts": {
@@ -18,17 +18,21 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@electron-toolkit/utils": "^3.0.0",
     "better-sqlite3": "^9.4.3",
-    "openai": "^4.28.0",
-    "electron-updater": "^6.1.7",
-    "pdf-parse": "^1.1.1",
-    "mammoth": "^1.7.0",
     "chokidar": "^3.6.0",
-    "fuse.js": "^7.0.0",
-    "uuid": "^9.0.0",
     "date-fns": "^3.3.1",
+    "docx": "^9.6.1",
+    "electron-updater": "^6.1.7",
+    "fuse.js": "^7.0.0",
     "lucide-react": "^0.344.0",
+    "mammoth": "^1.7.0",
+    "openai": "^4.28.0",
+    "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.18.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
@@ -59,14 +63,30 @@
         "repo": "Gerki-App"
       }
     ],
-    "directories": { "output": "dist" },
-    "files": ["out/**/*"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*"
+    ],
     "extraResources": [],
     "protocols": [
-      { "name": "Gerki", "schemes": ["gerki-app"] }
+      {
+        "name": "Gerki",
+        "schemes": [
+          "gerki-app"
+        ]
+      }
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "resources/icon.ico",
       "requestedExecutionLevel": "asInvoker",
       "artifactName": "Gerki-Setup-${version}.${ext}",
@@ -86,7 +106,15 @@
       "differentialPackage": false
     },
     "mac": {
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "icon": "resources/icon.icns",
       "category": "public.app-category.productivity",
       "artifactName": "Gerki-${version}-${arch}.${ext}",
