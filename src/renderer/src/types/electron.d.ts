@@ -199,6 +199,12 @@ declare global {
         }>
       }
 
+      // ── App / Updates ─────────────────────────────────────────────
+      appInfo?: {
+        checkForUpdates: () => Promise<{ success: boolean; error?: string }>
+        getVersion: () => Promise<string>
+      }
+
       // ── Plan Enforcement ──────────────────────────────────────────
       plan: {
         offlineWarning: () => Promise<{ daysRemaining: number; warn: boolean } | null>

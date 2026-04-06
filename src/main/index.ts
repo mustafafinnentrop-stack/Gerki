@@ -3,7 +3,7 @@
  * Erstellt das App-Fenster, registriert IPC-Handler, verwaltet den App-Lifecycle.
  */
 
-import { app, BrowserWindow, shell, dialog } from 'electron'
+import { app, BrowserWindow, shell, dialog, ipcMain } from 'electron'
 import { join } from 'path'
 import { autoUpdater } from 'electron-updater'
 import { optimizer, is } from '@electron-toolkit/utils'
@@ -102,6 +102,10 @@ function setupAutoUpdater(): void {
     })
   })
 
+  autoUpdater.on('update-not-available', () => {
+    mainWindow?.webContents.send('app:update-not-available')
+  })
+
   autoUpdater.on('error', (err) => {
     mainWindow?.webContents.send('app:update-error', { error: err.message })
   })
@@ -109,6 +113,18 @@ function setupAutoUpdater(): void {
   // Alle 4 Stunden nach Updates suchen
   autoUpdater.checkForUpdates()
   setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000)
+
+  // Manueller Update-Check via IPC
+  ipcMain.handle('app:check-for-updates', async () => {
+    try {
+      await autoUpdater.checkForUpdates()
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: String(err) }
+    }
+  })
+
+  ipcMain.handle('app:get-version', () => app.getVersion())
 }
 
 // App bereit

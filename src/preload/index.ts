@@ -109,6 +109,12 @@ const gerki = {
       ipcRenderer.invoke('document:save', content, format, suggestedName)
   },
 
+  // ── App / Updates ─────────────────────────────────────────────────
+  appInfo: {
+    checkForUpdates: () => ipcRenderer.invoke('app:check-for-updates'),
+    getVersion: () => ipcRenderer.invoke('app:get-version')
+  },
+
   // ── Events ────────────────────────────────────────────────────────
   on: (channel: string, callback: (...args: unknown[]) => void) => {
     const wrapped = (_event: Electron.IpcRendererEvent, ...args: unknown[]) => callback(...args)
