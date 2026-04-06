@@ -62,7 +62,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: dist/Gerki-Setup-*.exe
+          path: |
+            dist/Gerki-Setup-*.exe
+            dist/latest.yml
           retention-days: 1
 
   # ─── macOS Build ────────────────────────────────────────────────────
@@ -82,7 +84,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: mac-installer
-          path: dist/Gerki-*.dmg
+          path: |
+            dist/Gerki-*.dmg
+            dist/latest-mac.yml
           retention-days: 1
 
   # ─── GitHub Release erstellen ────────────────────────────────────────
@@ -140,6 +144,8 @@ jobs:
           files: |
             dist/*.exe
             dist/*.dmg
+            dist/latest.yml
+            dist/latest-mac.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
