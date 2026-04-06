@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Settings, Key, CheckCircle, AlertCircle, Loader2, Monitor, RefreshCw, Cpu, Download } from 'lucide-react'
+import { Settings, Key, CheckCircle, AlertCircle, Loader2, Monitor, RefreshCw, Cpu, Download, ArrowUpCircle } from 'lucide-react'
 
 interface SettingsData {
   claude_api_key?: string
@@ -46,6 +46,9 @@ export default function SettingsPage({}: SettingsPageProps): React.JSX.Element {
   const [ollamaStatus, setOllamaStatus] = useState<OllamaStatus | null>(null)
   const [pullingModel, setPullingModel] = useState<string | null>(null)
   const [pullProgress, setPullProgress] = useState<string>('')
+  const [appVersion, setAppVersion] = useState<string>('')
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'up-to-date' | 'error'>('idle')
 
   useEffect(() => {
     window.gerki.settings.get().then((s) => {
@@ -55,13 +58,30 @@ export default function SettingsPage({}: SettingsPageProps): React.JSX.Element {
     checkOpenclawStatus()
     checkOllamaStatus()
 
+    // App-Version laden
+    window.gerki.appInfo?.getVersion().then((v) => setAppVersion(v ?? ''))
+
+    // Update-Events
+    const unsubAvailable = window.gerki.on('app:update-available', () => setUpdateStatus('available'))
+    const unsubNotAvail = window.gerki.on('app:update-not-available', () => setUpdateStatus('up-to-date'))
+    const unsubError = window.gerki.on('app:update-error', () => setUpdateStatus('error'))
+
     // Ollama Pull-Progress Events
-    const unsub = window.gerki.on('ollama:pull-progress', (data: unknown) => {
+    const unsubPull = window.gerki.on('ollama:pull-progress', (data: unknown) => {
       const d = data as { status: string; percent?: number }
       setPullProgress(d.percent ? `${d.status} (${d.percent}%)` : d.status)
     })
-    return unsub
+    return () => { unsubAvailable(); unsubNotAvail(); unsubError(); unsubPull() }
   }, [])
+
+  const checkForUpdates = async () => {
+    setCheckingUpdate(true)
+    setUpdateStatus('checking')
+    await window.gerki.appInfo?.checkForUpdates()
+    setCheckingUpdate(false)
+    // Status wird via Event gesetzt (available / up-to-date / error)
+    setTimeout(() => { if (updateStatus === 'checking') setUpdateStatus('up-to-date') }, 8000)
+  }
 
   const checkOpenclawStatus = async () => {
     setCheckingOpenclaw(true)
@@ -374,6 +394,31 @@ export default function SettingsPage({}: SettingsPageProps): React.JSX.Element {
               })}
             </div>
           )}
+        </section>
+
+        {/* Updates */}
+        <section>
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">App-Updates</h2>
+          <div className="p-4 rounded-xl bg-surface border border-white/5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-white/80 font-medium">Gerki{appVersion ? ` v${appVersion}` : ''}</p>
+              <p className="text-xs text-white/40 mt-0.5">
+                {updateStatus === 'available' && <span className="text-green-400">Update verfügbar! Wird beim Neustart installiert.</span>}
+                {updateStatus === 'up-to-date' && <span className="text-green-400">Du hast die neueste Version.</span>}
+                {updateStatus === 'error' && <span className="text-red-400">Update-Prüfung fehlgeschlagen.</span>}
+                {(updateStatus === 'idle' || updateStatus === 'checking') && 'Automatische Updates alle 4 Stunden'}
+              </p>
+            </div>
+            <button
+              onClick={checkForUpdates}
+              disabled={checkingUpdate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+            >
+              {checkingUpdate
+                ? <><Loader2 size={14} className="animate-spin" /> Prüfe...</>
+                : <><ArrowUpCircle size={14} /> Nach Updates suchen</>}
+            </button>
+          </div>
         </section>
 
         {/* Info box */}
