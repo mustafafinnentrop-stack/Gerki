@@ -1,65 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' width='1024' height='1024'>
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f0f23"/>
-      <stop offset="100%" style="stop-color:#1a1040"/>
+    <linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' style='stop-color:#0f0f23'/>
+      <stop offset='100%' style='stop-color:#1a1040'/>
     </linearGradient>
-    <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7c3aed"/>
-      <stop offset="100%" style="stop-color:#2563eb"/>
-    </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <filter id='glow'>
+      <feGaussianBlur stdDeviation='7' result='coloredBlur'/>
+      <feMerge><feMergeNode in='coloredBlur'/><feMergeNode in='SourceGraphic'/></feMerge>
     </filter>
-    <filter id="glowStrong">
-      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <filter id='glowStrong'>
+      <feGaussianBlur stdDeviation='14' result='coloredBlur'/>
+      <feMerge><feMergeNode in='coloredBlur'/><feMergeNode in='SourceGraphic'/></feMerge>
     </filter>
   </defs>
-
-  <!-- Rounded square background -->
-  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
-
-  <!-- Orbit 1: horizontal -->
-  <ellipse cx="512" cy="512" rx="285" ry="105"
-    fill="none" stroke="#6d28d9" stroke-width="20"
-    stroke-linecap="round" filter="url(#glow)"/>
-
-  <!-- Orbit 2: rotated 60° -->
-  <ellipse cx="512" cy="512" rx="285" ry="105"
-    fill="none" stroke="#4f46e5" stroke-width="20"
-    stroke-linecap="round" filter="url(#glow)"
-    transform="rotate(60 512 512)"/>
-
-  <!-- Orbit 3: rotated -60° -->
-  <ellipse cx="512" cy="512" rx="285" ry="105"
-    fill="none" stroke="#2563eb" stroke-width="20"
-    stroke-linecap="round" filter="url(#glow)"
-    transform="rotate(-60 512 512)"/>
-
-  <!-- Nodes orbit 1 (left/right) -->
-  <circle cx="227" cy="512" r="32" fill="#a78bfa" filter="url(#glow)"/>
-  <circle cx="797" cy="512" r="32" fill="#a78bfa" filter="url(#glow)"/>
-
-  <!-- Nodes orbit 2 (rotated 60°): top-right / bottom-left -->
-  <circle cx="655" cy="266" r="32" fill="#818cf8" filter="url(#glow)"/>
-  <circle cx="369" cy="758" r="32" fill="#818cf8" filter="url(#glow)"/>
-
-  <!-- Nodes orbit 3 (rotated -60°): top-left / bottom-right -->
-  <circle cx="369" cy="266" r="32" fill="#60a5fa" filter="url(#glow)"/>
-  <circle cx="655" cy="758" r="32" fill="#60a5fa" filter="url(#glow)"/>
-
-  <!-- Nucleus outer glow -->
-  <circle cx="512" cy="512" r="70" fill="#7c3aed" opacity="0.3" filter="url(#glowStrong)"/>
-  <!-- Nucleus -->
-  <circle cx="512" cy="512" r="50" fill="#7c3aed" filter="url(#glow)"/>
-  <circle cx="512" cy="512" r="32" fill="#c4b5fd"/>
-  <circle cx="512" cy="512" r="16" fill="white" opacity="0.95"/>
+  <rect width='1024' height='1024' rx='200' ry='200' fill='url(#bg)'/>
+  <ellipse cx='512' cy='512' rx='430' ry='155' fill='none' stroke='#6d28d9' stroke-width='22' filter='url(#glow)'/>
+  <ellipse cx='512' cy='512' rx='430' ry='155' fill='none' stroke='#4f46e5' stroke-width='22' filter='url(#glow)' transform='rotate(60 512 512)'/>
+  <ellipse cx='512' cy='512' rx='430' ry='155' fill='none' stroke='#2563eb' stroke-width='22' filter='url(#glow)' transform='rotate(-60 512 512)'/>
+  <circle cx='82' cy='512' r='38' fill='#a78bfa' filter='url(#glow)'/>
+  <circle cx='942' cy='512' r='38' fill='#a78bfa' filter='url(#glow)'/>
+  <circle cx='727' cy='147' r='38' fill='#818cf8' filter='url(#glow)'/>
+  <circle cx='297' cy='877' r='38' fill='#818cf8' filter='url(#glow)'/>
+  <circle cx='297' cy='147' r='38' fill='#60a5fa' filter='url(#glow)'/>
+  <circle cx='727' cy='877' r='38' fill='#60a5fa' filter='url(#glow)'/>
+  <circle cx='512' cy='512' r='80' fill='#7c3aed' opacity='0.35' filter='url(#glowStrong)'/>
+  <circle cx='512' cy='512' r='58' fill='#7c3aed' filter='url(#glow)'/>
+  <circle cx='512' cy='512' r='38' fill='#c4b5fd'/>
+  <circle cx='512' cy='512' r='20' fill='white' opacity='0.95'/>
 </svg>
